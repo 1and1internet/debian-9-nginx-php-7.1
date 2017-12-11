@@ -5,7 +5,7 @@
  */
 
 //Open the database mydb
-$db = new SQLite3('mydb');
+$db = new SQLite3('/tmp/mydb');
 
 //drop the table if already exists
 $db->exec('DROP TABLE IF EXISTS fhtesting');
@@ -19,9 +19,9 @@ $db->exec('INSERT INTO fhtesting (col1) VALUES ("1")');
 //Query to ensure insert worked.
 $check = $db->exec('SELECT col1 FROM fhtesting');
 if ($check)
-{       
+{
     echo "Success";
-} else { 
+} else {
     echo "Failure";
 }
 ?>

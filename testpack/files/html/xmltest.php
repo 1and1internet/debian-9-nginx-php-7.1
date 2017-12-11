@@ -25,7 +25,7 @@ $dom = new DOMDocument('1.0');
 $dom_sxe = $dom->importNode($dom_sxe, true);
 $dom_sxe = $dom->appendChild($dom_sxe);
 
-$filename = './test.xml';
+$filename = '/tmp/test.xml';
 
 $dom->save($filename);
 
