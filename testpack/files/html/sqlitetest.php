@@ -5,7 +5,7 @@
  */
 
 //Open the database mydb
-$db = new SQLite3('/tmp/mydb');
+$db = new SQLite3('mydb');
 
 //drop the table if already exists
 $db->exec('DROP TABLE IF EXISTS fhtesting');

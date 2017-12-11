@@ -7,7 +7,6 @@ from selenium import webdriver
 import os.path
 import tarfile
 from io import BytesIO
-import stat
 
 
 class Test1and1ApacheImage(unittest.TestCase):
@@ -39,8 +38,6 @@ class Test1and1ApacheImage(unittest.TestCase):
         # Change to the start folder
         pwd = os.getcwd()
         os.chdir(startfolder)
-        # Set perms to 777 on the folder
-        os.chmod(relative_source, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
         # Tar up the request folder
         pw_tarstream = BytesIO()
         with tarfile.open(fileobj=pw_tarstream, mode='w:gz') as tf:
