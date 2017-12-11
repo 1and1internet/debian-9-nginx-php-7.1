@@ -1,4 +1,4 @@
-# Nginx with PHP 7.1 on Debian 9 (stretch))
+# Nginx with PHP 7.1 on Debian 9 (stretch)
 
 This image provides a common PHP hosting environment. The intent is for the PHP application itself to be stored in persistent storage wihch is then mounted in to this image at `/var/www`
 
