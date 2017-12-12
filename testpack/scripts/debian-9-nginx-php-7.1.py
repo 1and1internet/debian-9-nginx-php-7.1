@@ -9,7 +9,7 @@ import tarfile
 from io import BytesIO
 
 
-class Test1and1ApacheImage(unittest.TestCase):
+class Test1and1NginxImage(unittest.TestCase):
     container = None
     container_ip = None
 
@@ -20,7 +20,7 @@ class Test1and1ApacheImage(unittest.TestCase):
             raise Exception("I don't know what image to test")
 
         client = docker.from_env()
-        Test1and1ApacheImage.container = client.containers.run(
+        Test1and1NginxImage.container = client.containers.run(
             image=image_to_test,
             remove=True,
             detach=True,
@@ -28,10 +28,10 @@ class Test1and1ApacheImage(unittest.TestCase):
             user=10000,
             ports={8080:8080}
         )
-        Test1and1ApacheImage.copy_test_files("testpack/files", "html", "/var/www")
+        Test1and1NginxImage.copy_test_files("testpack/files", "html", "/var/www")
 
-        details = docker.APIClient().inspect_container(container=Test1and1ApacheImage.container.id)
-        Test1and1ApacheImage.container_ip = details['NetworkSettings']['IPAddress']
+        details = docker.APIClient().inspect_container(container=Test1and1NginxImage.container.id)
+        Test1and1NginxImage.container_ip = details['NetworkSettings']['IPAddress']
 
     @classmethod
     def copy_test_files(cls, startfolder, relative_source, dest):
@@ -44,7 +44,7 @@ class Test1and1ApacheImage(unittest.TestCase):
             tf.add(relative_source)
         # Copy the archive to the correct destination
         docker.APIClient().put_archive(
-            container=Test1and1ApacheImage.container.id,
+            container=Test1and1NginxImage.container.id,
             path=dest,
             data=pw_tarstream.getvalue()
         )
@@ -53,15 +53,15 @@ class Test1and1ApacheImage(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        Test1and1ApacheImage.container.stop()
+        Test1and1NginxImage.container.stop()
 
     def setUp(self):
         print ("\nIn method", self._testMethodName)
-        self.container = Test1and1ApacheImage.container
+        self.container = Test1and1NginxImage.container
 
     def check_success(self, page):
         driver = webdriver.PhantomJS()
-        driver.get("http://%s:8080/%s" % (Test1and1ApacheImage.container_ip, page))
+        driver.get("http://%s:8080/%s" % (Test1and1NginxImage.container_ip, page))
         self.assertTrue(
             driver.page_source.find('Success') > -1,
             msg="No success for %s" % page
@@ -144,7 +144,7 @@ class Test1and1ApacheImage(unittest.TestCase):
         webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-For'] = "1.2.3.4"
         webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-Port'] = "99"
         driver = webdriver.PhantomJS()
-        driver.get("http://%s:8080/phpinfo.php" % Test1and1ApacheImage.container_ip)
+        driver.get("http://%s:8080/phpinfo.php" % Test1and1NginxImage.container_ip)
         self.assertTrue(
             driver.page_source.find("REMOTE_ADDR']</td><td class=\"v\">1.2.3.4") > -1,
             msg="phpinfo not showing REMOTE_ADDR=1.2.3.4 "
