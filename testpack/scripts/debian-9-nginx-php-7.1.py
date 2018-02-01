@@ -69,7 +69,7 @@ class Test1and1NginxImage(unittest.TestCase):
 
     def file_mode_test(self, filename: str, mode: str):
         # Compare (eg) drwx???rw- to drwxr-xrw-
-        result = self.container.exec_run("ls -ld %s" % filename).decode('utf-8')
+        result = self.container.exec_run("ls -ld %s" % filename)[1].decode('utf-8')
         self.assertFalse(
             result.find("No such file or directory") > -1,
             msg="%s is missing" % filename
