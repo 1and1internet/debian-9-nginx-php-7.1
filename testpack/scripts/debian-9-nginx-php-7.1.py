@@ -5,63 +5,18 @@ import os
 import docker
 from selenium import webdriver
 import os.path
-import tarfile
-from io import BytesIO
+from testpack_helper_library.unittests.dockertests import Test1and1Common
 
 
-class Test1and1NginxImage(unittest.TestCase):
-    container = None
-    container_ip = None
-
+class Test1and1NginxImage(Test1and1Common):
     @classmethod
     def setUpClass(cls):
-        image_to_test = os.getenv("IMAGE_NAME")
-        if image_to_test == "":
-            raise Exception("I don't know what image to test")
-
-        client = docker.from_env()
-        Test1and1NginxImage.container = client.containers.run(
-            image=image_to_test,
-            remove=True,
-            detach=True,
-            network_mode="bridge",
-            user=10000,
-            ports={8080:8080}
-        )
-        Test1and1NginxImage.copy_test_files("testpack/files", "html", "/var/www")
-
-        details = docker.APIClient().inspect_container(container=Test1and1NginxImage.container.id)
-        Test1and1NginxImage.container_ip = details['NetworkSettings']['IPAddress']
-
-    @classmethod
-    def copy_test_files(cls, startfolder, relative_source, dest):
-        # Change to the start folder
-        pwd = os.getcwd()
-        os.chdir(startfolder)
-        # Tar up the request folder
-        pw_tarstream = BytesIO()
-        with tarfile.open(fileobj=pw_tarstream, mode='w:gz') as tf:
-            tf.add(relative_source)
-        # Copy the archive to the correct destination
-        docker.APIClient().put_archive(
-            container=Test1and1NginxImage.container.id,
-            path=dest,
-            data=pw_tarstream.getvalue()
-        )
-        # Change back to original folder
-        os.chdir(pwd)
-
-    @classmethod
-    def tearDownClass(cls):
-        Test1and1NginxImage.container.stop()
-
-    def setUp(self):
-        print ("\nIn method", self._testMethodName)
-        self.container = Test1and1NginxImage.container
+        Test1and1Common.setUpClass()
+        Test1and1Common.copy_test_files("testpack/files", "html", "/var/www")
 
     def check_success(self, page):
         driver = webdriver.PhantomJS()
-        driver.get("http://%s:8080/%s" % (Test1and1NginxImage.container_ip, page))
+        driver.get("http://%s:8080/%s" % (Test1and1Common.container_ip, page))
         self.assertTrue(
             driver.page_source.find('Success') > -1,
             msg="No success for %s" % page
@@ -69,7 +24,7 @@ class Test1and1NginxImage(unittest.TestCase):
 
     def file_mode_test(self, filename: str, mode: str):
         # Compare (eg) drwx???rw- to drwxr-xrw-
-        result = self.container.exec_run("ls -ld %s" % filename).decode('utf-8')
+        result = self.execRun("ls -ld %s" % filename)
         self.assertFalse(
             result.find("No such file or directory") > -1,
             msg="%s is missing" % filename
@@ -144,7 +99,7 @@ class Test1and1NginxImage(unittest.TestCase):
         webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-For'] = "1.2.3.4"
         webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-Port'] = "99"
         driver = webdriver.PhantomJS()
-        driver.get("http://%s:8080/phpinfo.php" % Test1and1NginxImage.container_ip)
+        driver.get("http://%s:8080/phpinfo.php" % Test1and1Common.container_ip)
         self.assertTrue(
             driver.page_source.find("REMOTE_ADDR']</td><td class=\"v\">1.2.3.4") > -1,
             msg="phpinfo not showing REMOTE_ADDR=1.2.3.4 "
